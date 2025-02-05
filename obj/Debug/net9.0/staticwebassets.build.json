@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "3BNzgpXkJsYK2XAJ19QcmQXOVTYzNRa3xNi591HIxww=",
+  "Source": "trailAPI",
+  "BasePath": "_content/trailAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
