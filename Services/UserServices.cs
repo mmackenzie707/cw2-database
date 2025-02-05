@@ -3,17 +3,18 @@ using trailAPI.Models;
 
 namespace trailAPI.Services
 {
-    public class UserService
+    public class UserServices
     {
-        private readonly List<User> _users = new List<User>
-        {
-            new User { Email = "testme@test.com", Password = "insecurePWD" },
-            new User { Email = "example@example.com", Password = "examplePWD" }
-        };
+        private readonly List<User> _users = new List<User>();
 
         public IEnumerable<User> GetUsers()
         {
             return _users;
+        }
+
+        public void AddUser(User user)
+        {
+            _users.Add(user);
         }
 
         public bool ValidateUser(User usr)

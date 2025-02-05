@@ -8,9 +8,9 @@ namespace trailAPI.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly UserService _userService;
+        private readonly UserServices _userService;
 
-        public UsersController(UserService userService)
+        public UsersController(UserServices userService)
         {
             _userService = userService;
         }
@@ -32,8 +32,8 @@ namespace trailAPI.Controllers
                 return BadRequest("User data is null");
             }
 
-            bool Verified = _userService.ValidateUser(usr);
-            return Ok(new { Status = "Verified", IsVerified = Verified });
+            _userService.AddUser(usr);
+            return Ok(new { Status = "User added", User = usr });
         }
     }
 }
