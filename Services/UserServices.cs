@@ -1,25 +1,33 @@
 using System.Collections.Generic;
+using System.Linq;
+using trailAPI.Data;
 using trailAPI.Models;
 
 namespace trailAPI.Services
 {
     public class UserServices
     {
-        private readonly List<User> _users = new List<User>();
+        private readonly ApplicationDbContext _context;
+
+        public UserServices(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public IEnumerable<User> GetUsers()
         {
-            return _users;
+            return _context.Users.ToList();
         }
 
         public void AddUser(User user)
         {
-            _users.Add(user);
+            _context.Users.Add(user);
+            _context.SaveChanges();
         }
 
         public bool ValidateUser(User usr)
         {
-            return _users.Exists(u => u.Email == usr.Email && u.Password == usr.Password);
+            return _context.Users.Any(u => u.Email == usr.Email && u.Password == usr.Password);
         }
     }
 }
