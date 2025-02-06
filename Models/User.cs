@@ -12,10 +12,12 @@ namespace trailAPI.Models
         public int UserID { get; set; }
 
         [Required]
+        [EmailAddress]
         [Column("username")] // Map to the database column
         public string Email { get; set; }
 
         [Required]
+        [MinLength(6)]
         [Column("password")] // Map to the database column
         public string Password { get; set; }
     }
