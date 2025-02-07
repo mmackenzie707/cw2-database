@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace trailAPI.Models
 {
-    [Table("Users")] // Ensure this matches your database table name
+    [Table("Users")] 
     public class User
     {
         [Key]
