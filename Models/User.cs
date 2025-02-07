@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -12,21 +13,22 @@ namespace trailAPI.Models
         public int UserID { get; set; }
 
         [Required]
-        [EmailAddress]
-        [Column("username")] // Map to the database column
-        public string Email { get; set; }
-
-        [Required]
-        [MinLength(6)]
-        [Column("password")] // Map to the database column
-        public string Password { get; set; }
-
-        [Required]
-        [Column("first_name")] // Map to the database column
+        [Column("firstName")] // Map to the database column
         public string FirstName { get; set; }
 
         [Required]
-        [Column("last_name")] // Map to the database column
+        [Column("lastName")] // Map to the database column
         public string LastName { get; set; }
+
+        [Required]
+        [Column("email")] // Map to the database column
+        public string Email { get; set; }
+
+        [Required]
+        [Column("password")] // Map to the database column
+        public string Password { get; set; }
+
+        // Add the Explorations navigation property
+        public ICollection<Exploration> Explorations { get; set; }
     }
 }
