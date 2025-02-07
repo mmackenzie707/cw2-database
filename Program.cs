@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using NWebsec.AspNetCore.Middleware;
 using System.Text;
 using trailAPI.Data;
 using trailAPI.Services;
@@ -50,21 +49,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
-// Add security headers
-app.UseHsts();
-app.UseXContentTypeOptions();
-app.UseReferrerPolicy(opts => opts.NoReferrer());
-app.UseXXssProtection(opts => opts.EnabledWithBlockMode());
-app.UseXfo(opts => opts.Deny());
-app.UseCsp(opts => opts
-    .BlockAllMixedContent()
-    .StyleSources(s => s.Self())
-    .FontSources(s => s.Self())
-    .FormActions(s => s.Self())
-    .FrameAncestors(s => s.Self())
-    .ImageSources(s => s.Self())
-    .ScriptSources(s => s.Self()));
 
 app.MapControllers();
 

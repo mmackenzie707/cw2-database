@@ -8,55 +8,55 @@ namespace trailAPI.Services
 {
     public class UserServices
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _dbContext;
 
-        public UserServices(ApplicationDbContext context)
+        public UserServices(ApplicationDbContext dbContext)
         {
-            _context = context;
+            _dbContext = dbContext;
         }
 
         public IEnumerable<User> GetUsers()
         {
-            return _context.Users.ToList();
+            return _dbContext.Users.ToList();
         }
 
         public User GetUserById(int id)
         {
-            return _context.Users.Find(id);
+            return _dbContext.Users.Find(id);
         }
 
         public void AddUser(User user)
         {
             // Hash the password before saving the user
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            _dbContext.Users.Add(user);
+            _dbContext.SaveChanges();
         }
 
         public void UpdateUser(User user)
         {
-            var existingUser = _context.Users.Find(user.UserID);
+            var existingUser = _dbContext.Users.Find(user.UserID);
             if (existingUser != null)
             {
                 existingUser.Email = user.Email;
                 existingUser.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-                _context.SaveChanges();
+                _dbContext.SaveChanges();
             }
         }
 
         public void DeleteUser(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = _dbContext.Users.Find(id);
             if (user != null)
             {
-                _context.Users.Remove(user);
-                _context.SaveChanges();
+                _dbContext.Users.Remove(user);
+                _dbContext.SaveChanges();
             }
         }
 
         public bool ValidateUser(User usr)
         {
-            var user = _context.Users.SingleOrDefault(u => u.Email == usr.Email);
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == usr.Email);
             if (user == null)
             {
                 return false;
@@ -64,6 +64,45 @@ namespace trailAPI.Services
 
             // Verify the hashed password
             return BCrypt.Net.BCrypt.Verify(usr.Password, user.Password);
+        }
+
+        // Add the AddExploration method
+        public void AddExploration(Exploration exploration)
+        {
+            _dbContext.Explorations.Add(exploration);
+            _dbContext.SaveChanges();
+        }
+
+        // Add the GetExplorationsByUserId method
+        public IEnumerable<Exploration> GetExplorationsByUserId(int userId)
+        {
+            return _dbContext.Explorations.Where(e => e.UserID == userId).ToList();
+        }
+
+        // Add the AddUserWithExploration method
+        public void AddUserWithExploration(UserExplorationDto dto)
+        {
+            var user = new User
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                Password = BCrypt.Net.BCrypt.HashPassword("defaultPassword") // Set a default password or handle password input
+            };
+
+            _dbContext.Users.Add(user);
+            _dbContext.SaveChanges();
+
+            var exploration = new Exploration
+            {
+                UserID = user.UserID,
+                TrailID = "AA0001", // Generate or set the TrailID as needed
+                CompletionDate = dto.CompletionDate,
+                CompletionStatus = dto.CompletionStatus
+            };
+
+            _dbContext.Explorations.Add(exploration);
+            _dbContext.SaveChanges();
         }
     }
 }

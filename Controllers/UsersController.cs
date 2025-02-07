@@ -118,5 +118,52 @@ namespace trailAPI.Controllers
             _userService.DeleteUser(id);
             return Ok(new { Status = "User deleted" });
         }
+
+        // POST: api/Users/{userId}/explorations
+        [Authorize]
+        [HttpPost("{userId}/explorations")]
+        public IActionResult AddExploration(int userId, [FromBody] Exploration exploration)
+        {
+            if (exploration == null || exploration.UserID != userId)
+            {
+                return BadRequest("Exploration data is invalid");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _userService.AddExploration(exploration);
+            return Ok(new { Status = "Exploration added", Exploration = exploration });
+        }
+
+        // GET: api/Users/{userId}/explorations
+        [Authorize]
+        [HttpGet("{userId}/explorations")]
+        public IActionResult GetExplorations(int userId)
+        {
+            var explorations = _userService.GetExplorationsByUserId(userId);
+            return Ok(explorations);
+        }
+
+        // POST: api/Users/with-exploration
+        [Authorize]
+        [HttpPost("with-exploration")]
+        public IActionResult AddUserWithExploration([FromBody] UserExplorationDto dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest("Data is null");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _userService.AddUserWithExploration(dto);
+            return Ok(new { Status = "User and Exploration added", Data = dto });
+        }
     }
 }

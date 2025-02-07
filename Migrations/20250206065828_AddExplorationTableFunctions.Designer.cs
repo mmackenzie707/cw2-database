@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using trailAPI.Data;
 
@@ -11,9 +12,11 @@ using trailAPI.Data;
 namespace trailAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250206065828_AddExplorationTableFunctions")]
+    partial class AddExplorationTableFunctions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,9 +30,10 @@ namespace trailAPI.Migrations
                     b.Property<int>("ExplorationID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("explorationID");
+                        .HasColumnName("explorationID")
+                        .HasAnnotation("SqlServer:Identity", "4000, 1");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExplorationID"), 4000L);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExplorationID"));
 
                     b.Property<DateTime>("CompletionDate")
                         .HasColumnType("datetime2")
@@ -62,9 +66,10 @@ namespace trailAPI.Migrations
                     b.Property<int>("UserID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("id");
+                        .HasColumnName("id")
+                        .HasAnnotation("SqlServer:Identity", "1000, 1");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserID"), 1000L);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserID"));
 
                     b.Property<string>("Email")
                         .IsRequired()

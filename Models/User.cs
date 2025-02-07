@@ -20,5 +20,13 @@ namespace trailAPI.Models
         [MinLength(6)]
         [Column("password")] // Map to the database column
         public string Password { get; set; }
+
+        [Required]
+        [Column("first_name")] // Map to the database column
+        public string FirstName { get; set; }
+
+        [Required]
+        [Column("last_name")] // Map to the database column
+        public string LastName { get; set; }
     }
 }
