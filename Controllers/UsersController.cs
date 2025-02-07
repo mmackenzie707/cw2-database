@@ -171,9 +171,9 @@ namespace trailAPI.Controllers
             return Ok(explorations);
         }
 
-        // POST: api/Users/with-exploration
+        // POST: api/Users/with-explorations
         [Authorize]
-        [HttpPost("with-exploration")]
+        [HttpPost("with-explorations")]
         public IActionResult AddUserWithExploration([FromBody] UserExplorationDto dto)
         {
             if (dto == null)

@@ -30,7 +30,6 @@ namespace trailAPI.Models
         [Column("completionStatus")] // Map to the database column
         public bool CompletionStatus { get; set; }
 
-        public User User { get; set; }
         public TrailInformation TrailInformation { get; set; }
     }
 }

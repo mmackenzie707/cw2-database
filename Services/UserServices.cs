@@ -87,6 +87,40 @@ namespace trailAPI.Services
             return BCrypt.Net.BCrypt.Verify(usr.Password, user.Password);
         }
 
+        // Add the GetUserByEmail method
+        public User GetUserByEmail(string email)
+        {
+            return _dbContext.Users.FirstOrDefault(u => u.Email == email);
+        }
+
+        // Add the UpdateUserEmail method
+        public void UpdateUserEmail(string oldEmail, string newEmail)
+        {
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == oldEmail);
+            if (user != null)
+            {
+                user.Email = newEmail;
+                _dbContext.SaveChanges();
+
+                // Send notification
+                _notificationService.SendEmail(newEmail, "Email Updated", "Your email address has been updated.");
+            }
+        }
+
+        // Add the DeleteUserByEmail method
+        public void DeleteUserByEmail(string email)
+        {
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+            if (user != null)
+            {
+                _dbContext.Users.Remove(user);
+                _dbContext.SaveChanges();
+
+                // Send notification
+                _notificationService.SendEmail(email, "Account Deleted", "Your account has been deleted.");
+            }
+        }
+
         public void AddExploration(Exploration exploration)
         {
             // Verify that the trailID exists in the Trail_Information table
@@ -148,39 +182,6 @@ namespace trailAPI.Services
 
             // Send notification
             _notificationService.SendEmail(user.Email, "User and Exploration Added", "Your user and exploration information has been logged.");
-        }
-
-        // New methods for user rights
-
-        public User GetUserByEmail(string email)
-        {
-            return _dbContext.Users.FirstOrDefault(u => u.Email == email);
-        }
-
-        public void UpdateUserEmail(string oldEmail, string newEmail)
-        {
-            var user = _dbContext.Users.FirstOrDefault(u => u.Email == oldEmail);
-            if (user != null)
-            {
-                user.Email = newEmail;
-                _dbContext.SaveChanges();
-
-                // Send notification
-                _notificationService.SendEmail(newEmail, "Email Updated", "Your email address has been updated.");
-            }
-        }
-
-        public void DeleteUserByEmail(string email)
-        {
-            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
-            if (user != null)
-            {
-                _dbContext.Users.Remove(user);
-                _dbContext.SaveChanges();
-
-                // Send notification
-                _notificationService.SendEmail(email, "Account Deleted", "Your account has been deleted.");
-            }
         }
     }
 }

@@ -28,7 +28,5 @@ namespace trailAPI.Models
         [Column("password")] // Map to the database column
         public string Password { get; set; }
 
-        // Add the Explorations navigation property
-        public ICollection<Exploration> Explorations { get; set; }
     }
 }
