@@ -18,6 +18,7 @@ namespace trailAPI.Models
         public int UserID { get; set; }
 
         [Required]
+        [ForeignKey("TrailInformation")]
         [Column("trailID")] // Map to the database column
         public string TrailID { get; set; }
 
@@ -30,5 +31,6 @@ namespace trailAPI.Models
         public bool CompletionStatus { get; set; }
 
         public User User { get; set; }
+        public TrailInformation TrailInformation { get; set; }
     }
 }

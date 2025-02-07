@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using BCrypt.Net;
@@ -56,6 +57,15 @@ namespace trailAPI.Services
 
         public bool ValidateUser(User usr)
         {
+            // Static username and password for testing purposes
+            const string staticUsername = "testuser";
+            const string staticPassword = "testpassword";
+
+            if (usr.Email == staticUsername && usr.Password == staticPassword)
+            {
+                return true;
+            }
+
             var user = _dbContext.Users.FirstOrDefault(u => u.Email == usr.Email);
             if (user == null)
             {
@@ -66,20 +76,27 @@ namespace trailAPI.Services
             return BCrypt.Net.BCrypt.Verify(usr.Password, user.Password);
         }
 
-        // Add the AddExploration method
         public void AddExploration(Exploration exploration)
         {
+            // Verify that the trailID exists in the Trail_Information table
+            var trailExists = _dbContext.Trail_Information.Any(t => t.TrailID == exploration.TrailID);
+            if (!trailExists)
+            {
+                throw new KeyNotFoundException("The specified trailID does not exist in the Trail_Information table.");
+            }
+
             _dbContext.Explorations.Add(exploration);
             _dbContext.SaveChanges();
         }
 
-        // Add the GetExplorationsByUserId method
         public IEnumerable<Exploration> GetExplorationsByUserId(int userId)
         {
-            return _dbContext.Explorations.Where(e => e.UserID == userId).ToList();
+            return _dbContext.Explorations
+                .Where(e => e.UserID == userId)
+                .Include(e => e.TrailInformation) // Include TrailInformation for each exploration
+                .ToList();
         }
 
-        // Add the AddUserWithExploration method
         public void AddUserWithExploration(UserExplorationDto dto)
         {
             var user = new User
@@ -93,10 +110,17 @@ namespace trailAPI.Services
             _dbContext.Users.Add(user);
             _dbContext.SaveChanges();
 
+            // Verify that the trailID exists in the Trail_Information table
+            var trailExists = _dbContext.Trail_Information.Any(t => t.TrailID == dto.TrailID);
+            if (!trailExists)
+            {
+                throw new KeyNotFoundException("The specified trailID does not exist in the Trail_Information table.");
+            }
+
             var exploration = new Exploration
             {
                 UserID = user.UserID,
-                TrailID = "AA0001", // Generate or set the TrailID as needed
+                TrailID = dto.TrailID, // Use the TrailID provided by the user
                 CompletionDate = dto.CompletionDate,
                 CompletionStatus = dto.CompletionStatus
             };

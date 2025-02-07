@@ -12,6 +12,7 @@ namespace trailAPI.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Exploration> Explorations { get; set; }
+        public DbSet<TrailInformation> Trail_Information { get; set; } // Add this line
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,10 +31,18 @@ namespace trailAPI.Data
                 .Property(e => e.ExplorationID)
                 .UseIdentityColumn(4000, 1);
 
-            // Configure TrailID to start with 'AA0000' and increment by 1
+            // Configure foreign key relationship
             modelBuilder.Entity<Exploration>()
-                .Property(e => e.TrailID)
-                .HasDefaultValueSql("'AA' + RIGHT('0000' + CAST(NEXT VALUE FOR dbo.TrailIDSequence AS VARCHAR(4)), 4)");
+                .HasOne(e => e.User)
+                .WithMany(u => u.Explorations)
+                .HasForeignKey(e => e.UserID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure TrailInformation entity
+            modelBuilder.Entity<TrailInformation>()
+                .ToTable("Trail_Information")
+                .Property(t => t.TrailID)
+                .HasColumnName("trailID");
         }
     }
 }

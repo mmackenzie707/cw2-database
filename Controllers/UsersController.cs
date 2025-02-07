@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using trailAPI.Models;
 using trailAPI.Services;
 
@@ -21,20 +23,20 @@ namespace trailAPI.Controllers
         // POST: api/Users/login
         [AllowAnonymous]
         [HttpPost("login")]
-        public IActionResult Login([FromBody] User usr)
+        public IActionResult Login([FromBody] LoginRequestDto loginRequest)
         {
-            if (usr == null || string.IsNullOrEmpty(usr.Email) || string.IsNullOrEmpty(usr.Password))
+            if (loginRequest == null || string.IsNullOrEmpty(loginRequest.Email) || string.IsNullOrEmpty(loginRequest.Password))
             {
                 return BadRequest("Invalid login request");
             }
 
-            var user = _userService.ValidateUser(usr);
+            var user = _userService.ValidateUser(new User { Email = loginRequest.Email, Password = loginRequest.Password });
             if (!user)
             {
                 return Unauthorized();
             }
 
-            var token = _tokenService.GenerateToken(usr);
+            var token = _tokenService.GenerateToken(new User { Email = loginRequest.Email });
             return Ok(new { Token = token });
         }
 
@@ -134,7 +136,15 @@ namespace trailAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            _userService.AddExploration(exploration);
+            try
+            {
+                _userService.AddExploration(exploration);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
             return Ok(new { Status = "Exploration added", Exploration = exploration });
         }
 
@@ -143,7 +153,26 @@ namespace trailAPI.Controllers
         [HttpGet("{userId}/explorations")]
         public IActionResult GetExplorations(int userId)
         {
-            var explorations = _userService.GetExplorationsByUserId(userId);
+            var user = _userService.GetUserById(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var explorations = _userService.GetExplorationsByUserId(userId)
+                .Select(e => new UserExplorationResponseDto
+                {
+                    explorationID = e.ExplorationID.ToString(),
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    TrailID = e.TrailID,
+                    TrailName = e.TrailInformation.trailName,
+                    TrailLocation = e.TrailInformation.trailLocation,
+                    CompletionDate = e.CompletionDate,
+                    CompletionStatus = e.CompletionStatus
+                }).ToList();
+
             return Ok(explorations);
         }
 
@@ -162,7 +191,15 @@ namespace trailAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            _userService.AddUserWithExploration(dto);
+            try
+            {
+                _userService.AddUserWithExploration(dto);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
             return Ok(new { Status = "User and Exploration added", Data = dto });
         }
     }

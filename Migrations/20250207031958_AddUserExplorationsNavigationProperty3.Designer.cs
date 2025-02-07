@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using trailAPI.Data;
 
@@ -11,9 +12,11 @@ using trailAPI.Data;
 namespace trailAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250207031958_AddUserExplorationsNavigationProperty3")]
+    partial class AddUserExplorationsNavigationProperty3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,15 +66,11 @@ namespace trailAPI.Migrations
                         .HasColumnType("nvarchar(450)")
                         .HasColumnName("trailID");
 
-                    b.Property<string>("trailDescription")
+                    b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("trailLocation")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("trailName")
+                    b.Property<string>("TrailName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
