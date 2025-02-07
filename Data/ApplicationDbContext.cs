@@ -12,7 +12,7 @@ namespace trailAPI.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Exploration> Explorations { get; set; }
-        public DbSet<TrailInformation> Trail_Information { get; set; } // Add this line
+        public DbSet<TrailInformation> Trail_Information { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

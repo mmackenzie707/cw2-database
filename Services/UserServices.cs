@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using BCrypt.Net;
+using Microsoft.EntityFrameworkCore;
 using trailAPI.Data;
 using trailAPI.Models;
 
@@ -10,10 +10,12 @@ namespace trailAPI.Services
     public class UserServices
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly NotificationService _notificationService;
 
-        public UserServices(ApplicationDbContext dbContext)
+        public UserServices(ApplicationDbContext dbContext, NotificationService notificationService)
         {
             _dbContext = dbContext;
+            _notificationService = notificationService;
         }
 
         public IEnumerable<User> GetUsers()
@@ -32,6 +34,9 @@ namespace trailAPI.Services
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             _dbContext.Users.Add(user);
             _dbContext.SaveChanges();
+
+            // Send notification
+            _notificationService.SendEmail(user.Email, "User Added", "Your user information has been logged.");
         }
 
         public void UpdateUser(User user)
@@ -42,6 +47,9 @@ namespace trailAPI.Services
                 existingUser.Email = user.Email;
                 existingUser.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
                 _dbContext.SaveChanges();
+
+                // Send notification
+                _notificationService.SendEmail(user.Email, "User Updated", "Your user information has been updated.");
             }
         }
 
@@ -52,6 +60,9 @@ namespace trailAPI.Services
             {
                 _dbContext.Users.Remove(user);
                 _dbContext.SaveChanges();
+
+                // Send notification
+                _notificationService.SendEmail(user.Email, "User Deleted", "Your user information has been deleted.");
             }
         }
 
@@ -87,6 +98,13 @@ namespace trailAPI.Services
 
             _dbContext.Explorations.Add(exploration);
             _dbContext.SaveChanges();
+
+            // Send notification
+            var user = _dbContext.Users.Find(exploration.UserID);
+            if (user != null)
+            {
+                _notificationService.SendEmail(user.Email, "Exploration Added", "Your exploration information has been logged.");
+            }
         }
 
         public IEnumerable<Exploration> GetExplorationsByUserId(int userId)
@@ -127,6 +145,42 @@ namespace trailAPI.Services
 
             _dbContext.Explorations.Add(exploration);
             _dbContext.SaveChanges();
+
+            // Send notification
+            _notificationService.SendEmail(user.Email, "User and Exploration Added", "Your user and exploration information has been logged.");
+        }
+
+        // New methods for user rights
+
+        public User GetUserByEmail(string email)
+        {
+            return _dbContext.Users.FirstOrDefault(u => u.Email == email);
+        }
+
+        public void UpdateUserEmail(string oldEmail, string newEmail)
+        {
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == oldEmail);
+            if (user != null)
+            {
+                user.Email = newEmail;
+                _dbContext.SaveChanges();
+
+                // Send notification
+                _notificationService.SendEmail(newEmail, "Email Updated", "Your email address has been updated.");
+            }
+        }
+
+        public void DeleteUserByEmail(string email)
+        {
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+            if (user != null)
+            {
+                _dbContext.Users.Remove(user);
+                _dbContext.SaveChanges();
+
+                // Send notification
+                _notificationService.SendEmail(email, "Account Deleted", "Your account has been deleted.");
+            }
         }
     }
 }

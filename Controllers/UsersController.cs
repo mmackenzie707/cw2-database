@@ -1,7 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using trailAPI.Models;
 using trailAPI.Services;
 
@@ -162,11 +160,8 @@ namespace trailAPI.Controllers
             var explorations = _userService.GetExplorationsByUserId(userId)
                 .Select(e => new UserExplorationResponseDto
                 {
-                    explorationID = e.ExplorationID.ToString(),
                     FirstName = user.FirstName,
                     LastName = user.LastName,
-                    Email = user.Email,
-                    TrailID = e.TrailID,
                     TrailName = e.TrailInformation.trailName,
                     TrailLocation = e.TrailInformation.trailLocation,
                     CompletionDate = e.CompletionDate,
@@ -201,6 +196,74 @@ namespace trailAPI.Controllers
             }
 
             return Ok(new { Status = "User and Exploration added", Data = dto });
+        }
+
+        // New endpoints for user rights
+
+        // GET: api/Users/email/{email}
+        [Authorize]
+        [HttpGet("email/{email}")]
+        public IActionResult GetUserByEmail(string email)
+        {
+            var user = _userService.GetUserByEmail(email);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+
+        // PUT: api/Users/email
+        [Authorize]
+        [HttpPut("email")]
+        public IActionResult UpdateUserEmail([FromBody] UpdateEmailDto updateEmailDto)
+        {
+            if (updateEmailDto == null || string.IsNullOrEmpty(updateEmailDto.OldEmail) || string.IsNullOrEmpty(updateEmailDto.NewEmail))
+            {
+                return BadRequest("Invalid email update request");
+            }
+
+            _userService.UpdateUserEmail(updateEmailDto.OldEmail, updateEmailDto.NewEmail);
+            return Ok(new { Status = "Email updated" });
+        }
+
+        // DELETE: api/Users/email/{email}
+        [Authorize]
+        [HttpDelete("email/{email}")]
+        public IActionResult DeleteUserByEmail(string email)
+        {
+            _userService.DeleteUserByEmail(email);
+            return Ok(new { Status = "User deleted" });
+        }
+
+                // GET: api/Users/privacy-policy
+        [AllowAnonymous]
+        [HttpGet("privacy-policy")]
+        public IActionResult GetPrivacyPolicy()
+        {
+            var privacyPolicyPath = Path.Combine(Directory.GetCurrentDirectory(), "privacy-policy.txt");
+            if (!System.IO.File.Exists(privacyPolicyPath))
+            {
+                return NotFound("Privacy policy not found.");
+            }
+
+            var privacyPolicy = System.IO.File.ReadAllText(privacyPolicyPath);
+            return Ok(new { Policy = privacyPolicy });
+        }
+
+                // GET: api/Users/notice
+        [AllowAnonymous]
+        [HttpGet("notice")]
+        public IActionResult GetNotice()
+        {
+            var noticePath = Path.Combine(Directory.GetCurrentDirectory(), "notice.txt");
+            if (!System.IO.File.Exists(noticePath))
+            {
+                return NotFound("Notice not found.");
+            }
+
+            var notice = System.IO.File.ReadAllText(noticePath);
+            return Ok(new { Notice = notice });
         }
     }
 }

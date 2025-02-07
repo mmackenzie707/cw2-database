@@ -16,6 +16,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<NotificationService>();
 
 // Configure the database context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -49,6 +50,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapControllers();
 
