@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using trailAPI.Data;
 
@@ -11,9 +12,11 @@ using trailAPI.Data;
 namespace trailAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250206070939_AddExplorationTableFunctions2")]
+    partial class AddExplorationTableFunctions2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,8 +44,10 @@ namespace trailAPI.Migrations
 
                     b.Property<string>("TrailID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)")
-                        .HasColumnName("trailID");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("trailID")
+                        .HasDefaultValueSql("'AA' + RIGHT('0000' + CAST(NEXT VALUE FOR dbo.TrailIDSequence AS VARCHAR(4)), 4)");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int")
@@ -50,34 +55,9 @@ namespace trailAPI.Migrations
 
                     b.HasKey("ExplorationID");
 
-                    b.HasIndex("TrailID");
-
                     b.HasIndex("UserID");
 
                     b.ToTable("Explorations", (string)null);
-                });
-
-            modelBuilder.Entity("trailAPI.Models.TrailInformation", b =>
-                {
-                    b.Property<string>("TrailID")
-                        .HasColumnType("nvarchar(450)")
-                        .HasColumnName("trailID");
-
-                    b.Property<string>("trailDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("trailLocation")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("trailName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("TrailID");
-
-                    b.ToTable("Trail_Information", (string)null);
                 });
 
             modelBuilder.Entity("trailAPI.Models.User", b =>
@@ -92,17 +72,17 @@ namespace trailAPI.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("email");
+                        .HasColumnName("username");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("firstName");
+                        .HasColumnName("first_name");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("lastName");
+                        .HasColumnName("last_name");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -116,26 +96,13 @@ namespace trailAPI.Migrations
 
             modelBuilder.Entity("trailAPI.Models.Exploration", b =>
                 {
-                    b.HasOne("trailAPI.Models.TrailInformation", "TrailInformation")
-                        .WithMany()
-                        .HasForeignKey("TrailID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("trailAPI.Models.User", "User")
-                        .WithMany("Explorations")
+                        .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("TrailInformation");
-
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("trailAPI.Models.User", b =>
-                {
-                    b.Navigation("Explorations");
                 });
 #pragma warning restore 612, 618
         }
