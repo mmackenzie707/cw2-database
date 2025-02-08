@@ -1,21 +1,14 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using trailAPI.Models;
 
 namespace trailAPI.Models
 {
-    [Table("Explorations")]
     public class Exploration
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("explorationID")] // Map to the database column
         public int ExplorationID { get; set; }
-
-        [Required]
-        [ForeignKey("User")]
-        [Column("userID")] // Map to the database column
-        public int UserID { get; set; }
 
         [Required]
         [ForeignKey("TrailInformation")]
@@ -30,7 +23,10 @@ namespace trailAPI.Models
         [Column("completionStatus")] // Map to the database column
         public bool CompletionStatus { get; set; }
 
-        public User User { get; set; }
+        public int UserID { get; set; }
+
+        public UserWithExploration UsersWithExploration { get; set; }
+
         public TrailInformation TrailInformation { get; set; }
     }
 }

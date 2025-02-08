@@ -1,16 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using trailAPI.Models;
 
-namespace trailAPI.Models
-{
-    [Table("Users")] // Map to the database table
-    public class User
+public class UserWithExplorationDto
     {
-        [Key]
-        public int UserID { get; set; }
-
         [Required]
-        [EmailAddress]
         public string Email { get; set; }
 
         [Required]
@@ -22,5 +15,6 @@ namespace trailAPI.Models
 
         [Required]
         public string LastName { get; set; }
+
+        public ICollection<ExplorationDto> Explorations { get; set; }
     }
-}

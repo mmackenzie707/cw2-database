@@ -18,24 +18,23 @@ namespace trailAPI.Controllers
             _tokenService = tokenService;
         }
 
-        // POST: api/Users/login
         [AllowAnonymous]
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequestDto loginRequest)
+        [HttpPost("Login")]
+        public IActionResult Login([FromBody] LoginDto loginDto)
         {
-            if (loginRequest == null || string.IsNullOrEmpty(loginRequest.Email) || string.IsNullOrEmpty(loginRequest.Password))
+            if (loginDto == null || string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.Password))
             {
                 return BadRequest("Invalid login request");
             }
 
-            var user = _userService.ValidateUser(new User { Email = loginRequest.Email, Password = loginRequest.Password });
-            if (!user)
+            var user = _userService.ValidateUser(loginDto.Username, loginDto.Password);
+            if (user == null)
             {
-                return Unauthorized();
+                return Unauthorized(new { Status = "Login failed", Error = "Invalid username or password" });
             }
 
-            var token = _tokenService.GenerateToken(new User { Email = loginRequest.Email });
-            return Ok(new { Token = token });
+            var token = _tokenService.GenerateToken(user);
+            return Ok(new { Status = "Login successful", Token = token });
         }
 
         // GET: api/Users
@@ -119,87 +118,6 @@ namespace trailAPI.Controllers
             return Ok(new { Status = "User deleted" });
         }
 
-        // POST: api/Users/{userId}/explorations
-        [Authorize]
-        [HttpPost("{userId}/explorations")]
-        public IActionResult AddExploration(int userId, [FromBody] Exploration exploration)
-        {
-            if (exploration == null || exploration.UserID != userId)
-            {
-                return BadRequest("Exploration data is invalid");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            try
-            {
-                _userService.AddExploration(exploration);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-            return Ok(new { Status = "Exploration added", Exploration = exploration });
-        }
-
-        // GET: api/Users/{userId}/explorations
-        [Authorize]
-        [HttpGet("{userId}/explorations")]
-        public IActionResult GetExplorations(int userId)
-        {
-            var user = _userService.GetUserById(userId);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            var explorations = _userService.GetExplorationsByUserId(userId)
-                .Select(e => new UserExplorationResponseDto
-                {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    TrailName = e.TrailInformation.trailName,
-                    TrailLocation = e.TrailInformation.trailLocation,
-                    CompletionDate = e.CompletionDate,
-                    CompletionStatus = e.CompletionStatus
-                }).ToList();
-
-            return Ok(explorations);
-        }
-
-        // POST: api/Users/with-exploration
-        [Authorize]
-        [HttpPost("with-exploration")]
-        public IActionResult AddUserWithExploration([FromBody] UserExplorationDto dto)
-        {
-            if (dto == null)
-            {
-                return BadRequest("Data is null");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            try
-            {
-                _userService.AddUserWithExploration(dto);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-            return Ok(new { Status = "User and Exploration added", Data = dto });
-        }
-
-        // New endpoints for user rights
-
         // GET: api/Users/email/{email}
         [Authorize]
         [HttpGet("email/{email}")]
@@ -236,7 +154,7 @@ namespace trailAPI.Controllers
             return Ok(new { Status = "User deleted" });
         }
 
-                // GET: api/Users/privacy-policy
+        // GET: api/Users/privacy-policy
         [AllowAnonymous]
         [HttpGet("privacy-policy")]
         public IActionResult GetPrivacyPolicy()
@@ -251,19 +169,31 @@ namespace trailAPI.Controllers
             return Ok(new { Policy = privacyPolicy });
         }
 
-                // GET: api/Users/notice
-        [AllowAnonymous]
-        [HttpGet("notice")]
-        public IActionResult GetNotice()
+        // POST: api/Users/with-explorations
+        [Authorize]
+        [HttpPost("with-explorations")]
+        public IActionResult PostWithExplorations([FromBody] UserWithExploration usr)
         {
-            var noticePath = Path.Combine(Directory.GetCurrentDirectory(), "notice.txt");
-            if (!System.IO.File.Exists(noticePath))
+            if (usr == null)
             {
-                return NotFound("Notice not found.");
+                return BadRequest("User data is null");
             }
 
-            var notice = System.IO.File.ReadAllText(noticePath);
-            return Ok(new { Notice = notice });
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var explorationDtos = usr.Explorations.Select(e => new ExplorationDto
+            {
+                // Map properties from Exploration to ExplorationDto
+                TrailID = e.TrailID,
+                CompletionDate = e.CompletionDate,
+                CompletionStatus = e.CompletionStatus
+            });
+
+            _userService.AddUserWithExploration(usr, explorationDtos);
+            return Ok(new { Status = "User with explorations added", User = usr });
         }
     }
 }
