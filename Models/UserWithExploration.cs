@@ -27,3 +27,4 @@ namespace trailAPI.Models
         // Foreign key link to the Exploration table
         public ICollection<Exploration> Explorations { get; set; }
     }
+}
