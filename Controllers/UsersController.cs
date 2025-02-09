@@ -18,6 +18,7 @@ namespace trailAPI.Controllers
             _tokenService = tokenService;
         }
 
+        // POST: api/Users/Login
         [AllowAnonymous]
         [HttpPost("Login")]
         public IActionResult Login([FromBody] LoginDto loginDto)
@@ -30,11 +31,30 @@ namespace trailAPI.Controllers
             var user = _userService.ValidateUser(loginDto.Username, loginDto.Password);
             if (user == null)
             {
-                return Unauthorized(new { Status = "Login failed", Error = "Invalid username or password" });
+                return Unauthorized(new { Status = "Login failed", Error = "Invalid email or password" });
             }
 
             var token = _tokenService.GenerateToken(user);
             return Ok(new { Status = "Login successful", Token = token });
+        }
+
+        // POST: api/Users/admin-create
+        [AllowAnonymous]
+        [HttpPost("admin-create")]
+        public IActionResult AdminCreate([FromBody] User user)
+        {
+            if (user == null)
+            {
+                return BadRequest("User data is null");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _userService.AddAdminUser(user);
+            return Ok(new { Status = "Admin user added", User = user });
         }
 
         // GET: api/Users
@@ -62,9 +82,9 @@ namespace trailAPI.Controllers
         // POST: api/Users
         [Authorize]
         [HttpPost]
-        public IActionResult Post([FromBody] User usr)
+        public IActionResult Post([FromBody] User user)
         {
-            if (usr == null)
+            if (user == null)
             {
                 return BadRequest("User data is null");
             }
@@ -74,8 +94,8 @@ namespace trailAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            _userService.AddUser(usr);
-            return Ok(new { Status = "User added", User = usr });
+            _userService.AddUser(user);
+            return Ok(new { Status = "User added", User = user });
         }
 
         // PUT: api/Users/{id}
@@ -103,6 +123,7 @@ namespace trailAPI.Controllers
             return Ok(new { Status = "User updated", User = usr });
         }
 
+        
         // DELETE: api/Users/{id}
         [Authorize]
         [HttpDelete("{id}")]
@@ -167,33 +188,6 @@ namespace trailAPI.Controllers
 
             var privacyPolicy = System.IO.File.ReadAllText(privacyPolicyPath);
             return Ok(new { Policy = privacyPolicy });
-        }
-
-        // POST: api/Users/with-explorations
-        [Authorize]
-        [HttpPost("with-explorations")]
-        public IActionResult PostWithExplorations([FromBody] UserWithExploration usr)
-        {
-            if (usr == null)
-            {
-                return BadRequest("User data is null");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var explorationDtos = usr.Explorations.Select(e => new ExplorationDto
-            {
-                // Map properties from Exploration to ExplorationDto
-                TrailID = e.TrailID,
-                CompletionDate = e.CompletionDate,
-                CompletionStatus = e.CompletionStatus
-            });
-
-            _userService.AddUserWithExploration(usr, explorationDtos);
-            return Ok(new { Status = "User with explorations added", User = usr });
         }
     }
 }

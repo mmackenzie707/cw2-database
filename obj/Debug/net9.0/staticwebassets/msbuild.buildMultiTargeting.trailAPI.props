@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\trailAPI.props" />
-</Project>

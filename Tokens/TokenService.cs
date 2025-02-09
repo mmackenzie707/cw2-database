@@ -46,5 +46,10 @@ namespace trailAPI.Services
 
             return tokenString;
         }
+
+        internal object GenerateToken(bool user)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

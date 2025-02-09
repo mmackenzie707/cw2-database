@@ -18,6 +18,11 @@ builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<NotificationService>();
 
+builder.Services.AddControllers();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<ExplorationServices>(); 
+
 // Configure the database context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

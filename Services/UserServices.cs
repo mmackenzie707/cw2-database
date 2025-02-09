@@ -35,32 +35,53 @@ namespace trailAPI.Services
             _dbContext.Users.Add(user);
             _dbContext.SaveChanges();
 
-            // Send notification
-            _notificationService.SendEmail(user.Email, "User Added", "Your user information has been logged.");
-        }
-
-        public void AddUserWithExploration(UserWithExploration user)
-        {
-            // Hash the password before saving the user
-            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            _dbContext.UsersWithExplorations.Add(user);
+            // Add authorization entry
+            var authorization = new IsAuthorized
+            {
+                UserID = user.UserID,
+                IsAuthorizedUser = true
+            };
+            _dbContext.IsAuthorized.Add(authorization);
             _dbContext.SaveChanges();
 
             // Send notification
             _notificationService.SendEmail(user.Email, "User Added", "Your user information has been logged.");
         }
 
+        public void AddAdminUser(User user)
+        {
+            // Hash the password before saving the user
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            user.IsAdmin = true;
+            _dbContext.Users.Add(user);
+            _dbContext.SaveChanges();
+
+            // Add authorization entry
+            var authorization = new IsAuthorized
+            {
+                UserID = user.UserID,
+                IsAuthorizedUser = true
+            };
+            _dbContext.IsAuthorized.Add(authorization);
+            _dbContext.SaveChanges();
+
+            // Send notification
+            _notificationService.SendEmail(user.Email, "Admin User Added", "Your admin user information has been logged.");
+        }
+
         public void UpdateUser(User user)
         {
-            var existingUser = _dbContext.Users.Find(user.UserID);
+            var existingUser = _dbContext.Users.FirstOrDefault(u => u.UserID == user.UserID);
             if (existingUser != null)
             {
                 existingUser.Email = user.Email;
                 existingUser.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-                _dbContext.SaveChanges();
+                existingUser.FirstName = user.FirstName;
+                existingUser.LastName = user.LastName; // Ensure this property is updated
+                existingUser.IsAdmin = user.IsAdmin;
 
-                // Send notification
-                _notificationService.SendEmail(user.Email, "User Updated", "Your user information has been updated.");
+                _dbContext.Users.Update(existingUser); // Ensure the entity is marked as modified
+                _dbContext.SaveChanges(); // Save changes to the database
             }
         }
 
@@ -77,25 +98,16 @@ namespace trailAPI.Services
             }
         }
 
-        public User ValidateUser(string username, string password)
+        public User ValidateUser(string email, string password)
         {
-            // Static username and password for testing purposes
-            const string staticUsername = "testuser@test.com";
-            const string staticPassword = "testpassword";
-
-            if (username == staticUsername && password == staticPassword)
+            var user = _dbContext.Users.FirstOrDefault(u => u.Email == email);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
-                return new User
-                {
-                    Email = staticUsername,
-                    Password = staticPassword,
-                    FirstName = "Static",
-                    LastName = "User"
-                };
+                return null;
             }
 
-            var user = _dbContext.Users.FirstOrDefault(u => u.Email == username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
+            var isAuthorized = _dbContext.IsAuthorized.FirstOrDefault(ia => ia.UserID == user.UserID);
+            if (isAuthorized == null || !isAuthorized.IsAuthorizedUser)
             {
                 return null;
             }

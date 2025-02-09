@@ -8,7 +8,7 @@ namespace trailAPI.Models
     {
         [Key]
         [Column("trailID")] // Map to the database column
-        public string TrailID { get; set; }
+        public int TrailID { get; set; }
 
         // Add other properties as needed
         public string trailName { get; set; }
